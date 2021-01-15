@@ -1,0 +1,14 @@
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.run.xml
+*.toc
+template/content.tex
+template/output
+content.md
+content-plain.txt
+version.tex
+abstract.tex
+abstract-compiled.md
