@@ -1,0 +1,159 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[english]{babel}
+\usepackage{csquotes}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\usepackage[
+  % textwidth=14cm,
+  text={13cm,20.5cm},
+  centering
+]{geometry}
+
+\usepackage{marginnote}
+\setlength{\marginparwidth}{3cm}
+
+\usepackage{fontspec}
+\setmainfont{Palatino} % [BoldFont=...]
+\linespread{1.07}
+% \defaultfontfeatures{Ligatures=TeX}
+\usepackage{microtype}
+
+% nicer '//' in urls: https://tex.stackexchange.com/a/98473/229000
+\makeatletter
+% nice "//"
+\newcommand{\twobar}{/\kern-0.2em/}
+% store original \Url@acthash
+\let\orig@Url@acthash\Url@acthash
+% make new \Url@acthash that acts "//" as well
+\let\new@Url@acthash\Url@acthash
+\g@addto@macro{\new@Url@acthash}{\Url@Edit\Url@String{//}{\twobar}}
+% make \urlstyle use the original \Url@acthash
+\let\orig@urlstyle\urlstyle
+\def\urlstyle{\let\Url@acthash\orig@Url@acthash\orig@urlstyle}
+% make selected url styles use the new \Url@acthash
+\g@addto@macro{\url@rmstyle}{\let\Url@acthash\new@Url@acthash}
+\g@addto@macro{\url@sfstyle}{\let\Url@acthash\new@Url@acthash}
+\makeatother
+
+% apparently biblatex is the way to go:
+% \usepackage[
+% 	backend=biber,
+% 	style=verbose, % numeric, alphabetic, authoryear, authortitle, apa
+% 	firstinits=false,
+% 	sorting=ynt % year, name and title
+% ]{biblatex}
+\usepackage[
+	authordate,
+	backend=biber,
+	isbn=false,
+	dashed=false, % always show full name, even if same author occurs multiple times, in bibliography
+	citecounter=true,
+	% backref=true, % links to pages in bibliography
+  ibidtracker=false, % avoid 'shortened' citation for same source multiple times in a row
+  maxnames=99 % show ALL the names
+]{biblatex-chicago}
+\addbibresource{../sources.bib}
+
+% count number of citations
+% https://tex.stackexchange.com/a/14159/229000
+% \renewcommand{\finentrypunct}{%
+% 	\addperiod\space
+% 	(Cited \arabic{citecounter}~time\ifnumequal{\value{citecounter}}{1}{}{s})%
+% }
+
+% https://tex.stackexchange.com/questions/257418/error-tightlist-converting-md-file-into-pdf-using-pandoc
+\providecommand{\tightlist}{%
+	\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+}
+
+% slightly smaller type size for quotes
+\AtBeginEnvironment{quote}{\small}
+
+% set caption font size to same as footnotes
+\usepackage{caption}
+\captionsetup{font=footnotesize}
+
+% default image width: same as text width
+% https://tex.stackexchange.com/a/79974/229000
+\setkeys{Gin}{width=\linewidth}
+
+% image path
+\graphicspath{ {../media/} }
+
+% for breaking long urls
+% https://stackoverflow.com/a/61079281/2839801
+\usepackage{xurl}
+
+% "Chapter 2\nBla" → "2. Bla"
+% https://tex.stackexchange.com/a/62526/229000
+\makeatletter
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+      %\if@mainmatter
+        %\huge\bfseries \@chapapp\space \thechapter
+        \Huge\bfseries \thechapter.\space%
+        %\par\nobreak
+        %\vskip 20\p@
+      %\fi
+    \fi
+    \interlinepenalty\@M
+    \Huge \bfseries #1\par\nobreak
+    \vskip 40\p@
+  }}
+\makeatother
+
+% keep footnotes from breaking across page
+\interfootnotelinepenalty=10000
+
+% no page break after title page, so that we can add extra stuff
+\let\endtitlepage\relax
+
+% https://tex.stackexchange.com/a/165647/229000
+\lccode`\(`\(
+\lccode`\)`\)
+\hyphenation{(im)-pos-si-ble}
+
+% ---------------------------------
+\title{The title: A wild journey}
+\author{Your Name}
+
+\begin{document}
+\pagenumbering{roman}
+
+\maketitle
+\begin{center}Version: \input{version.tex}\end{center}
+\clearpage
+
+\begin{abstract}
+\input{abstract.tex}
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\setcounter{chapter}{-1}
+\input{content.tex}
+
+\clearpage
+\raggedright
+% \printbibliography
+\printbibheading[heading=bibintoc]
+\printbibliography[
+  keyword=major,
+  heading=subbibliography,
+  title={Major Sources}
+]
+\printbibliography[
+  keyword=minor,
+  heading=subbibliography,
+  title={Minor Sources}
+]
+
+\end{document}
