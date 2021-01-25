@@ -3,13 +3,12 @@ const path = require('path');
 const child_process = require('child_process');
 
 const { targetCharCount } = require('./config.js');
-
-
-const contentTexFile = path.join(__dirname, './template/content.tex');
-const contentPlainFile = path.join(__dirname, 'content-plain.txt');
-
-const abstractTexFile = path.join(__dirname, './template/abstract.tex');
-const abstractPlainFile = path.join(__dirname, 'abstract-plain.txt');
+const {
+	contentTexFile,
+	contentPlainFile,
+	abstractTexFile,
+	abstractPlainFile,
+} = require('./common.js');
 
 // convert to plain text
 child_process.execSync(`pandoc ${contentTexFile} -t plain -o ${contentPlainFile}`);

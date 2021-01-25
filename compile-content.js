@@ -9,13 +9,13 @@ const {
 	mode,
 	chaptersDir,
 	targetCharCount,
-	abstractFileName
+	abstractFileName,
 } = require('./config.js');
-
-
-const contentMdFile = path.join(__dirname, './content.md');
-const contentTexFile = path.join(__dirname, './template/content.tex');
-const abstractCompiledMdFile = path.join(__dirname, './abstract-compiled.md');
+const {
+	contentMdFile,
+	contentTexFile,
+	abstractCompiledMdFile,
+} = require('./common.js');
 
 
 const pathFromName = (fileName) => {
