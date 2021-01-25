@@ -40,4 +40,7 @@ rm -f *.{aux,bbl,bcf,blg,log,run.xml,out,toc}
 
 # -----------------------------------
 
+echo
 echo -e "$output"
+
+node ../count-chars.js

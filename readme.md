@@ -26,5 +26,4 @@ cd template
 
 
 ## note
-- reported character count will include latex commands in .md files
-- reported character count ignores abstract.md
+- reported character count might be slightly off. (uses `pandoc` to convert latex to plain text, and then counts all characters)

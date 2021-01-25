@@ -1,9 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const child_process = require('child_process');
 
 const R = require('ramda');
-const remark = require('remark');
-const strip = require('strip-markdown');
 const glob = require('glob');
 
 const {
@@ -14,7 +13,9 @@ const {
 } = require('./config.js');
 
 
-const outputFile = './content.md';
+const contentMdFile = path.join(__dirname, './content.md');
+const contentTexFile = path.join(__dirname, './template/content.tex');
+const abstractCompiledMdFile = path.join(__dirname, './abstract-compiled.md');
 
 
 const pathFromName = (fileName) => {
@@ -37,6 +38,21 @@ const getUnusedFiles = (allFiles, seenFiles) => {
 };
 
 
+const processLatex = (content) => {
+	if (mode === 'development') {
+		// turn TODO comments into marginalia
+		content = content.replace(
+			/<!-- TODO: (.*) -->/igm,
+`\\marginnote{
+	\\color{blue}\\scriptsize
+	$1
+}`
+		);			
+	}
+	return content;
+};
+
+
 const structure = [
 	'\\chapter{Structure}',
 	read('structure.md'),
@@ -51,58 +67,23 @@ const structure = [
 	'\\chapter{Conclusion} \\label{chap:conclusion}',
 	read('conclusion.md'),
 ];
-let content = structure.join('\n\n');
 
-remark()
-	.use(strip)
-	.process(
-		content, (err, plainText) => {
-		if (err) { throw err; }
+// combine everything in one markdown file:
+let content = processLatex(
+	structure.join('\n\n')
+);
+fs.writeFileSync(contentMdFile, content);
 
-		// save plain text version
-		fs.writeFileSync(
-			path.join(__dirname, 'content-plain.txt'),
-			String(plainText)
-		)
+// warn about unused files:
+const allFiles = glob.sync(pathFromName('*.md'))
+	.map((filePath) => path.basename(filePath));
+const unusedFiles = getUnusedFiles(allFiles, seenFiles)
+	.filter((file) => file !== abstractFileName);
+if (unusedFiles.length) {
+	console.log('[WARNING] unused files:');
+	unusedFiles.forEach((f) => console.log(`- ${f}`));
+}
 
-		console.log('');
-		console.log('INFO:');
-		console.log('-----');
-
-		// count characters in plain text version
-		const charCount = String(plainText).length;
-		const percent = (100 * charCount / targetCharCount).toFixed(2);
-		console.log(charCount, '/', targetCharCount, `(${percent}%) without abstract`);
-
-		if (mode === 'development') {
-		// turn TODO comments into marginalia
-			content = content.replace(
-				/<!-- TODO: (.*) -->/igm,
-`\\marginnote{
-	\\color{blue}\\scriptsize
-	$1
-}`
-			);			
-		}
-
-		fs.writeFileSync(
-			path.join(__dirname, outputFile),
-			content
-		);
-
-		const allFiles = glob.sync(pathFromName('*.md'))
-			.map((filePath) => path.basename(filePath));
-		const unusedFiles = getUnusedFiles(allFiles, seenFiles)
-			.filter((file) => file !== abstractFileName);
-		if (unusedFiles.length) {
-			console.log('[WARNING] unused files:');
-			unusedFiles.forEach((f) => console.log(`- ${f}`));
-		}
-
-		// handle abstract separately because it has to be inserted
-		// at a different point in the latex template
-		fs.writeFileSync(
-			path.join(__dirname, './abstract-compiled.md'),
-			read(abstractFileName)
-		);
-	});
+// handle abstract separately because it has to be inserted
+// at a different point in the latex template
+fs.writeFileSync(abstractCompiledMdFile, read(abstractFileName));
